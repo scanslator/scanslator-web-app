@@ -1,95 +1,91 @@
-import Image from "next/image";
+"use client";
+
+import React, { useState } from "react";
 import styles from "./page.module.css";
+import { getMask } from "@/api/masks";
 
-export default function Home() {
+const App = () => {
+  // Function to handle image upload.
+  const [uploadedImage, setUploadedImage] = useState<File>();
+  const [imageMask, setImageMask] = useState<File | null>(null);
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    // Remove the mask
+    setImageMask(null);
+    // Upload the image
+    const file = event.target.files?.[0];
+    if (file) {
+      setUploadedImage(file);
+    }
+    console.log(imageMask);
+  };
+
+  async function fetchMask() {
+    if (!uploadedImage) return;
+
+    try {
+      const mask = await getMask(uploadedImage);
+      setImageMask(mask);
+    } catch (error) {
+      console.error("failed to fetch mask");
+      throw error;
+    }
+  }
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
+    <div className={styles.App}>
+      {/* Top Bar */}
+      <div className={styles["top-sidebar"]}>
+        <input
+          id="upload"
+          type="file"
+          accept="image/*"
+          onChange={handleImageUpload}
         />
+        <button type="button" onClick={fetchMask}>
+          Mask On
+        </button>
+        <button type="button" onClick={() => setImageMask(null)}>
+          Reset Mask
+        </button>
       </div>
 
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
+      {/* Tool Bar */}
+      <div className={styles["tool-bar"]}>
+        <button className={styles["tool-button"]}></button>
+        <button className={styles["tool-button"]}></button>
+        <button className={styles["tool-button"]}></button>
+        <button className={styles["tool-button"]}></button>
       </div>
-    </main>
+
+      {/* Central Area (where image is placed) */}
+      <div className={styles["main-content"]} style={{ position: "relative" }}>
+        {uploadedImage && (
+          <img
+            className={styles.img}
+            src={URL.createObjectURL(uploadedImage)}
+            alt="Uploaded"
+            style={{
+              position: "absolute",
+            }}
+          />
+        )}
+        {imageMask && (
+          <img
+            className={styles.img}
+            src={URL.createObjectURL(imageMask)}
+            alt="Mask"
+            style={{
+              position: "absolute",
+            }}
+          />
+        )}
+      </div>
+
+      {/* Library Bar */}
+      <div className={styles["library-bar"]}>{/* Library goes here */}</div>
+    </div>
   );
-}
+};
+
+export default App;
