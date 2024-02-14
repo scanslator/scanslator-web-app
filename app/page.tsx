@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import styles from "./page.module.css";
-import { getMask } from "@/api/masks";
+import { getMask } from "@/app/services/masks";
 
 const App = () => {
   // Function to handle image upload.
