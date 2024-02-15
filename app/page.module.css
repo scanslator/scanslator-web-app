@@ -232,7 +232,7 @@
 /* Set app grid */
 .App {
   display: grid;
-  grid-template-columns: 1fr 4fr 1fr;
+  grid-template-columns: 100px 1fr 200px;
   grid-template-rows: auto 1fr;
   height: 100vh;
 }
@@ -240,8 +240,9 @@
 /* Top Bar */
 .top-sidebar {
   grid-column: 1 / span 3;
-  background-color: rgb(186, 186, 186);
+  background-color: rgb(37, 35, 160);
   display: flex;
+  height: 40px;
   justify-content: space-around;
   align-items: center;
 }
@@ -260,14 +261,15 @@
   grid-column: 3;
   background-color: #000000;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  justify-content: flex-start;
   align-items: center;
 }
 
 /* Main Content Area */
 .main-content {
   grid-column: 2;
-  background-color: #f0f0f0;
+  background-color: #d1cdcd;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -275,14 +277,44 @@
 
 /* Tool Buttons */
 .tool-button {
-  width: 100px;
-  height: 100px;
-  margin-top: 5px;
+  width: 80%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  margin-top: 8px;
   margin-bottom: 5px;
+  align-items: center;
 }
 
 /* Uploaded Image */
 .img {
   max-width: 95%;
   max-height: 95%;
+}
+
+/* All contents within the library */
+.library-contents {
+  align-items: center;
+}
+
+/* Library Item Container */
+.library-item {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+  margin-bottom: 5px;
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+/* Library Item Image */
+.library-image {
+  width: 40px; 
+  height: auto; 
+  margin-right: 8px; 
+}
+
+/* Library Item Title */
+.library-title {
+  font-size: 0.9rem; 
+  margin: 0;
 }
