@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import styles from "./page.module.css";
+//import styles from "./page.module.css";
+import 'tailwindcss/tailwind.css';
 import { getMask } from "@/app/services/masks";
 
 const App = () => {
@@ -63,15 +64,15 @@ const App = () => {
     const imageName = uploadedImage.name;
 
     // Get the library bar element
-    const libraryBar = document.querySelector(`.${styles['library-bar']}`);
-    const libraryContents = document.querySelector(`.${styles['library-contents']}`);
+    const libraryBar = document.querySelector('.library-bar');
+    const libraryContents = document.querySelector('.library-contents');
     
     // Check if libraryBar exists
     if (libraryBar && libraryContents) {
 
         // Check if an image with the same file name is already present in the library bar
         // If a duplicate image is found, do not add it again
-        const existingImages = libraryBar.querySelectorAll(`.${styles['library-item']} p`);
+        const existingImages = libraryBar.querySelectorAll('.library-item p');
         const duplicateImage = Array.from(existingImages).find(title => title.textContent === imageName);
         if (duplicateImage) {
             console.log(`Image '${imageName}' is already in the library.`);
@@ -80,18 +81,18 @@ const App = () => {
 
         // Create a new library item div
         const libraryItem = document.createElement('button');
-        libraryItem.className = styles['library-item'];
+        libraryItem.className = 'library-item';
 
         // Create an new library item image div
         const copiedImage = document.createElement('img');
         copiedImage.src = URL.createObjectURL(uploadedImage);
         copiedImage.alt = 'Copied Image';
-        copiedImage.className = styles["library-image"];
+        copiedImage.className = "w-24 h-auto";
 
         // Create a new library item title div
         const title = document.createElement('p');
         title.textContent = imageName;
-        title.className = styles["library-title"];
+        title.className = "text-sm";
 
         // Add the two new divs to the library item
         libraryItem.appendChild(copiedImage);
@@ -111,18 +112,18 @@ const App = () => {
 
   // HTML
   return (
-    <div className={styles.App}>
+    <div className="grid grid-cols-3 grid-rows-3 h-screen">
       
       {/* Top Bar */}
-      <div className={styles["top-sidebar"]}>
+      <div className="col-span-3 row-span-1 bg-blue-600 flex justify-around items-center top-sidebar">
         <input
           id="upload"
           type="file"
           accept="image/*"
           onChange={handleImageUpload}
         />
-        <button type="button" onClick={fetchMask}>Mask On</button>
-        <button type="button" onClick={() => setImageMask(null)}>Reset Mask</button>
+        <button className="bg-blue-500 text-white px-4 py-2 rounded" type="button" onClick={fetchMask}>Mask On</button>
+        <button className="bg-blue-500 text-white px-4 py-2 rounded" type="button" onClick={() => setImageMask(null)}>Reset Mask</button>
       </div>
 
       {/* Tool Bar */}
