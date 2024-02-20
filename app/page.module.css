@@ -291,6 +291,12 @@
   max-height: 95%;
 }
 
+/* The title of the library itself */
+.library-title {
+  color: white;
+  font-weight: bold;
+}
+
 /* All contents within the library */
 .library-contents {
   align-items: center;
@@ -304,12 +310,14 @@
   margin-bottom: 5px;
   margin-left: 5px;
   margin-right: 5px;
+  width: 180px;
+  height: 80px;
 }
 
 /* Library Item Image */
 .library-image {
-  width: 40px; 
-  height: auto; 
+  width: 30%; 
+  height: 80%; 
   margin-right: 8px; 
 }
 

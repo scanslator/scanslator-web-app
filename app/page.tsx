@@ -7,6 +7,8 @@ import { getMask } from "@/app/services/masks";
 const App = () => {
   const [uploadedImage, setUploadedImage] = useState<File>();
   const [imageMask, setImageMask] = useState<File | null>(null);
+  const [downloaded, setDownloaded] = useState<boolean>(false);
+  const [addedToLibrary, setAddedToLibrary] = useState<boolean>(false);
 
 
   // Function to handle image upload.
@@ -159,7 +161,7 @@ const App = () => {
 
       {/* Library Bar */}
       <div className={styles["library-bar"]}>
-        <h1>Library</h1>
+        <div className={styles["library-title"]} style={{ fontSize: "2rem" }}>Library</div>
         <div className={styles["library-contents"]}></div>
       </div>
     </div>
