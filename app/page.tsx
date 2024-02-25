@@ -121,6 +121,7 @@ const App = () => {
         />
         <button type="button" onClick={fetchMask}>Mask On</button>
         <button type="button" onClick={() => setImageMask(null)}>Reset Mask</button>
+        <button type="button" >Mask Off</button>
       </div>
 
       {/* Tool Bar */}
