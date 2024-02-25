@@ -2,9 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 import { fabric } from "fabric";
+import {fabric as customFabric} from "../services/fabric"
 
 const DrawingCanvas = () => {
   const [isDrawingMode, setIsDrawingMode] = useState(true);
+  const [isErasingMode, setIsErasingMode] = useState(false);
   const [canvas, setCanvas] = useState(null);
 
   useEffect(() => {
@@ -17,12 +19,25 @@ const DrawingCanvas = () => {
     };
   }, []);
 
+  useEffect(() => {
+    setCanvas(canvas);
+  }, [setIsErasingMode])
+
   const toggleDrawingMode = () => {
     setIsDrawingMode(!isDrawingMode);
     if (canvas) {
       canvas.isDrawingMode = !canvas.isDrawingMode;
     }
+    console.log(canvas.freeDrawingBrush)
   };
+
+  const toggleErasingMode = () => {
+    canvas.freeDrawingBrush = new customFabric.EraserBrush(canvas);
+    setIsErasingMode(!isErasingMode)
+    setIsDrawingMode(true);
+    canvas.isDrawingMode = true;
+    canvas.freeDrawingBrush.width = 10;
+  }
 
   const clearCanvas = () => {
     if (canvas) {
@@ -85,6 +100,7 @@ const DrawingCanvas = () => {
       <button onClick={toggleDrawingMode}>
         {isDrawingMode ? "Cancel drawing mode" : "Enter drawing mode"}
       </button>
+      <button onClick={toggleErasingMode}>Erase</button>
       <button onClick={clearCanvas}>Clear</button>
       <input type="file" onChange={handleImageUpload} />
       <canvas id="c" width="600" height="400" />
