@@ -283,6 +283,9 @@
 
 /* Uploaded Image */
 .img {
+  width: auto;
+  height: auto;
+  margin: auto;
   max-width: 95%;
   max-height: 95%;
 }

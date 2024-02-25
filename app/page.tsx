@@ -2,12 +2,15 @@
 
 import React, { useState } from "react";
 import styles from "./page.module.css";
+import WZoom from "vanilla-js-wheel-zoom"
 import { getMask } from "@/app/services/masks";
+import  ImageViewey  from "@/app/components/imageView";
 
 const App = () => {
   // Function to handle image upload.
   const [uploadedImage, setUploadedImage] = useState<File>();
   const [imageMask, setImageMask] = useState<File | null>(null);
+  //let wzoom = uploadedImage ? WZoom.create("#viewport") : null;
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     // Remove the mask
@@ -19,6 +22,11 @@ const App = () => {
     }
     console.log(imageMask);
   };
+
+  const makeZoomable = () => {
+    const wzoom = WZoom.create("#mainViewport");
+    console.log("zoomable function called");
+  }
 
   async function fetchMask() {
     if (!uploadedImage) return;
@@ -59,27 +67,22 @@ const App = () => {
       </div>
 
       {/* Central Area (where image is placed) */}
-      <div className={styles["main-content"]} style={{ position: "relative" }}>
-        {uploadedImage && (
-          <img
-            className={styles.img}
-            src={URL.createObjectURL(uploadedImage)}
-            alt="Uploaded"
-            style={{
-              position: "absolute",
-            }}
-          />
-        )}
-        {imageMask && (
-          <img
-            className={styles.img}
-            src={URL.createObjectURL(imageMask)}
-            alt="Mask"
-            style={{
-              position: "absolute",
-            }}
-          />
-        )}
+      <div className={styles["main-content"]} /*style={{ position: "relative" }}*/ id="mainViewport">
+        {/* <div className={styles["viewport"]} id="mainViewport"> */}
+          {uploadedImage && (
+            <ImageViewey file={uploadedImage} onImageLoad={makeZoomable}/>
+          )}
+          {imageMask && (
+            <img
+              className={styles.img}
+              src={URL.createObjectURL(imageMask)}
+              alt="Mask"
+              /*style={{
+                position: "absolute",
+              }}*/
+            />
+          )}
+        {/* </div> */}
       </div>
 
       {/* Library Bar */}
