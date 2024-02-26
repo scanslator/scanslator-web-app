@@ -160,8 +160,12 @@ const App = () => {
 
       {/* Library Bar */}
       <div className={styles["library-bar"]}>
-        <h1>Library</h1>
-        <div className={styles["library-contents"]}></div>
+      <div className={styles["library-overall-title"]} style={{ fontSize: '30pt', color: 'black', fontWeight: 'bold'}}>Library</div>
+        <div className={styles["library-contents"]}>
+          {/* See All button takes you to the Library Page */}
+          <h3 style={{textAlign: 'center', marginLeft: '10px', marginRight: '10px'}}>Your library is currently empty. Save an image and it will display here!</h3>
+          <button className={styles["library-item"]} style={{justifyContent: 'center', color: 'white', fontSize: '16pt', backgroundColor: 'black'}}>SEE ALL</button>
+        </div>
       </div>
     </div>
   );

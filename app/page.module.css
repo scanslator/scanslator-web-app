@@ -240,7 +240,7 @@
 /* Top Bar */
 .top-sidebar {
   grid-column: 1 / span 3;
-  background-color: rgb(37, 35, 160);
+  background-color: rgb(172, 170, 255);
   display: flex;
   height: 40px;
   justify-content: space-around;
@@ -250,7 +250,7 @@
 /* Tool Bar */
 .tool-bar {
   grid-column: 1;
-  background-color: #000000;
+  background-color: #ff9191;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -259,11 +259,13 @@
 /* Library Bar */
 .library-bar {
   grid-column: 3;
-  background-color: #000000;
+  background-color: #ff9191;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
+  overflow-y: auto;
+  max-height: calc(100vh - 40px);
 }
 
 /* Main Content Area */
@@ -283,12 +285,18 @@
   margin-top: 8px;
   margin-bottom: 5px;
   align-items: center;
+  font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 }
 
 /* Uploaded Image */
 .img {
   max-width: 95%;
   max-height: 95%;
+}
+
+/* "Library" in Library Bar */
+.library-overall-title {
+  font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 }
 
 /* All contents within the library */
@@ -304,17 +312,22 @@
   margin-bottom: 5px;
   margin-left: 5px;
   margin-right: 5px;
+  height: 50px;
+  width: 95%;
+  background-color:#bdbdbd;
 }
 
 /* Library Item Image */
 .library-image {
-  width: 40px; 
-  height: auto; 
+  width: 30%; 
+  height: 90%; 
   margin-right: 8px; 
 }
 
 /* Library Item Title */
 .library-title {
   font-size: 0.9rem; 
+  font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   margin: 0;
+  justify-self: center;
 }
