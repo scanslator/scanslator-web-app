@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { fabric } from "fabric";
-import {fabric as customFabric} from "../services/fabric"
+import {fabric} from "../services/fabric"
 
 const DrawingCanvas = () => {
   const [isDrawingMode, setIsDrawingMode] = useState(true);
@@ -19,9 +18,6 @@ const DrawingCanvas = () => {
     };
   }, []);
 
-  useEffect(() => {
-    setCanvas(canvas);
-  }, [setIsErasingMode])
 
   const toggleDrawingMode = () => {
     setIsDrawingMode(!isDrawingMode);
@@ -32,11 +28,10 @@ const DrawingCanvas = () => {
   };
 
   const toggleErasingMode = () => {
-    canvas.freeDrawingBrush = new customFabric.EraserBrush(canvas);
+    canvas.freeDrawingBrush = new fabric.EraserBrush(canvas);
     setIsErasingMode(!isErasingMode)
     setIsDrawingMode(true);
     canvas.isDrawingMode = true;
-    canvas.freeDrawingBrush.width = 10;
   }
 
   const clearCanvas = () => {

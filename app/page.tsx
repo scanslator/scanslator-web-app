@@ -3,11 +3,13 @@
 import React, { useState } from "react";
 import styles from "./page.module.css";
 import { getMask } from "@/app/services/masks";
+import { removeMask } from '@/app/services/removeMask'
 import DrawingCanvas from "./components/DrawingCanvas";
 
 const App = () => {
   const [uploadedImage, setUploadedImage] = useState<File>();
   const [imageMask, setImageMask] = useState<File | null>(null);
+  const [imageWithoutText, setImageWithoutText] = useState<File | null>(null);
 
   // Function to handle image upload.
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,6 +47,19 @@ const App = () => {
     try {
       const mask = await getMask(uploadedImage);
       setImageMask(mask);
+    } catch (error) {
+      console.error("failed to fetch mask");
+      throw error;
+    }
+  }
+
+  // Function to remove the image mask.
+  async function removeMaskFront() {
+    if (!uploadedImage || !imageMask) return;
+
+    try {
+      const imageWithoutT = await removeMask(uploadedImage, imageMask);
+      setImageWithoutText(imageWithoutT)
     } catch (error) {
       console.error("failed to fetch mask");
       throw error;
@@ -127,6 +142,9 @@ const App = () => {
         <button type="button" onClick={() => setImageMask(null)}>
           Reset Mask
         </button>
+        <button onClick={removeMaskFront}>
+          Remove texts
+        </button>
       </div>
 
       {/* Tool Bar */}
@@ -149,8 +167,8 @@ const App = () => {
 
       {/* Central Area (where image is placed) */}
       <div className={styles["main-content"]} style={{ position: "relative" }}>
-        <DrawingCanvas />
-        {/* {uploadedImage && (
+        {/* <DrawingCanvas /> */}
+        {uploadedImage && !imageWithoutText && (
           <img
             className={styles.img}
             src={URL.createObjectURL(uploadedImage)}
@@ -160,7 +178,7 @@ const App = () => {
             }}
           />
         )}
-        {imageMask && (
+        {imageMask && !imageWithoutText && (
           <img
             className={styles.img}
             src={URL.createObjectURL(imageMask)}
@@ -169,7 +187,13 @@ const App = () => {
               position: "absolute",
             }}
           />
-        )} */}
+        )}
+        {imageWithoutText && (
+          <img
+            className={styles.img}
+            src={URL.createObjectURL(imageWithoutText)}
+          />
+        )}
       </div>
 
       {/* Library Bar */}
