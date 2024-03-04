@@ -19,7 +19,7 @@ const App = () => {
     if (file) {
       setUploadedImage(file);
     }
-    console.log(imageMask);
+    console.log(file);
   };
 
   // Function to handle image download.
@@ -149,7 +149,7 @@ const App = () => {
 
       {/* Central Area (where image is placed) */}
       <div className={styles["main-content"]} style={{ position: "relative" }}>
-        <DrawingCanvas />
+        {/* {uploadedImage && <DrawingCanvas imageFile={uploadedImage} />} */}
         {/* {uploadedImage && (
           <img
             className={styles.img}
@@ -159,8 +159,8 @@ const App = () => {
               position: "absolute",
             }}
           />
-        )}
-        {imageMask && (
+        )} */}
+        {/* {imageMask && (
           <img
             className={styles.img}
             src={URL.createObjectURL(imageMask)}
@@ -170,6 +170,7 @@ const App = () => {
             }}
           />
         )} */}
+        {uploadedImage && <DrawingCanvas image={uploadedImage} />}
       </div>
 
       {/* Library Bar */}
