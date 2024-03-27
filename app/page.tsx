@@ -252,15 +252,15 @@ const App = () => {
     // downloadFile(updatedImage)
     // console.log((await getImageDimensions(updatedImage)))
     // console.log((await getImageDimensions(updatedMask)))
-    if (updatedImage && updatedMask) {
+    if (uploadedImage && imageMask) {
       console.log('test')
-      const newImage = await getInfill(updatedImage, updatedMask);
+      const newImage = await getInfill(uploadedImage, imageMask);
       downloadFile(newImage)
       // newImage.scale(2)
       console.log(newImage)
-      // setUploadedImage(newImage);
-      // setImageMask(null)
-      // setCanvas(null)
+      setUploadedImage(newImage);
+      setImageMask(null)
+      setCanvas(null)
     }
   }
 

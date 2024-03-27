@@ -166,56 +166,6 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ image, mask, canvas, setC
     }
   };
 
-  const downloadUpdatedMask = () => {
-    if (!canvas) {
-      console.error("Canvas is not available");
-      return;
-    }
-
-    // Create an off-screen canvas element
-    const offScreenCanvas = document.createElement('canvas');
-    offScreenCanvas.width = canvas.width;
-    offScreenCanvas.height = canvas.height;
-    const offScreenContext = offScreenCanvas.getContext('2d');
-
-    if (!offScreenContext) {
-      console.error("Unable to get context for the off-screen canvas");
-      return;
-    }
-
-    // Find the mask object on the canvas
-    const maskObject = canvas.getObjects().find(obj => obj.type === 'image'); // Assuming mask is the only image object
-
-    // Draw the mask object onto the off-screen canvas
-    if (maskObject) {
-      maskObject.clone((cloned) => {
-        offScreenContext.drawImage(cloned.getElement(), 0, 0, offScreenCanvas.width, offScreenCanvas.height);
-
-        // Now draw the additional drawings from the canvas on top of the mask
-        canvas.getObjects().forEach(obj => {
-          if (obj !== maskObject && obj.type === 'path') {
-            obj.clone((clonedPath) => {
-              clonedPath.set({ left: obj.left, top: obj.top });
-              clonedPath.render(offScreenContext);
-            });
-          }
-        });
-
-        // Trigger the download
-        offScreenCanvas.toBlob((blob) => {
-          const link = document.createElement('a');
-          link.download = 'updated-mask.png';
-          link.href = URL.createObjectURL(blob);
-          document.body.appendChild(link); // Firefox requires the link to be in the body
-          link.click();
-          document.body.removeChild(link); // Remove the link when done
-        }, 'image/png');
-      }, ['left', 'top']); // Clone with specific properties
-    } else {
-      console.error("Mask object not found on the canvas");
-    }
-  };
-
   return (
       <div
           // Uncomment and use your CSS styles if needed
@@ -230,7 +180,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ image, mask, canvas, setC
         <button onClick={toggleErasingMode}>Erase</button>
         <button onClick={clearCanvas}>Clear</button>
         <canvas id="c" width="95%" height="95%"/>
-        <button onClick={downloadUpdatedMask}>Save</button>
+        {/*<button onClick={downloadUpdatedMask}>Save</button>*/}
       </div>
 );
 };
