@@ -8,6 +8,7 @@ import { Canvas } from "fabric/fabric-impl";
 import { getInfill } from "@/app/services/infill";
 import { withAuthenticator } from "@aws-amplify/ui-react";
 import { signOut } from "aws-amplify/auth";
+import { getTextbox } from "./services/textbox";
 import "@aws-amplify/ui-react/styles.css";
 
 const App = () => {
@@ -266,14 +267,16 @@ const App = () => {
     console.log("infill");
     const updatedMask = (await getUpdatedMask()) as File;
     const updatedImage = (await getBackgroundImage()) as File;
-    // downloadFile(updatedMask);
-    // downloadFile(updatedImage)
-    // console.log((await getImageDimensions(updatedImage)))
-    // console.log((await getImageDimensions(updatedMask)))
+    downloadFile(updatedMask);
+    downloadFile(updatedImage)
+    console.log((await getImageDimensions(uploadedImage)))
+    console.log((await getImageDimensions(imageMask)))
+    console.log((await getImageDimensions(updatedImage)))
+    console.log((await getImageDimensions(updatedMask)))
     if (uploadedImage && imageMask) {
       console.log("test");
-      const newImage = await getInfill(uploadedImage, imageMask);
-      downloadFile(newImage);
+      const newImage = await getInfill(updatedImage, updatedMask);
+      // downloadFile(newImage);
       // newImage.scale(2)
       console.log(newImage);
       setUploadedImage(newImage);
@@ -336,6 +339,35 @@ const App = () => {
     }
   }
 
+  async function translate(image: File){
+    try {
+      const translated = document.getElementById('dmm') as HTMLCanvasElement;
+      const ctx = translated.getContext('2d');
+      console.log(ctx)
+    // Define the bounding box coordinates
+    const box = {
+        x: 50,
+        y: 50,
+        width: 200,
+        height: 100
+    };
+
+      ctx.beginPath();
+      ctx.rect(box.x, box.y, box.width, box.height);
+      ctx.stroke();
+
+      // Add text inside the bounding box
+      ctx.font = '16px Arial'; // Set font style
+      ctx.fillStyle = 'black'; // Set text color
+      ctx.fillText("DITMEMAY", box.x + 10, box.y + 20); // Adjust position as needed
+      console.log(await getTextbox(image))
+      return getTextbox(image);
+    }
+    catch (error){
+      console.error("Error translating: ", error);
+    }
+  }
+
   // HTML
   return (
     <div className={styles.App}>
@@ -361,7 +393,7 @@ const App = () => {
 
       {/* Tool Bar */}
       <div className={styles["tool-bar"]}>
-        <button className={styles["tool-button"]}></button>
+        <button className={styles["tool-button"]} onClick={uploadedImage && (() => translate(uploadedImage))}>Translate</button>
         <button className={styles["tool-button"]}></button>
         <button className={styles["tool-button"]}></button>
         <button className={styles["tool-button"]}></button>
@@ -382,6 +414,7 @@ const App = () => {
         {/*{uploadedImage && <DrawingCanvas file={uploadedImage} canvas={canvas} setCanvas={setCanvas} />}*/}
         {uploadedImage && !imageMask && (
           <img
+            id = "dmm"
             className={styles.img}
             src={URL.createObjectURL(uploadedImage)}
             alt="Uploaded"
