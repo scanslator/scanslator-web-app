@@ -3,9 +3,12 @@
 import React, { useState } from "react";
 import styles from "./page.module.css";
 import { getMask } from "@/app/services/masks";
-import DrawingCanvas from "./components/DrawingCanvas.tsx";
-import {Canvas} from "fabric/fabric-impl";
-import {getInfill} from "@/app/services/infill";
+import DrawingCanvas from "./components/DrawingCanvas";
+import { Canvas } from "fabric/fabric-impl";
+import { getInfill } from "@/app/services/infill";
+import { withAuthenticator } from "@aws-amplify/ui-react";
+import { signOut } from "aws-amplify/auth";
+import "@aws-amplify/ui-react/styles.css";
 
 const App = () => {
   const [uploadedImage, setUploadedImage] = useState<File>();
@@ -41,23 +44,21 @@ const App = () => {
   //   document.body.removeChild(link);
   // };
 
-    const handleImageDownload = () => {
-        if (!canvas) return;
+  const handleImageDownload = () => {
+    if (!canvas) return;
 
-        const dataUrl = canvas.toDataURL({
-            format: "png",
-            quality: 1,
-        });
+    const dataUrl = canvas.toDataURL({
+      format: "png",
+      quality: 1,
+    });
 
-        const link = document.createElement("a");
-        link.download = "canvas-image.png";
-        link.href = dataUrl;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
-
-
+    const link = document.createElement("a");
+    link.download = "canvas-image.png";
+    link.href = dataUrl;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // Function to fetch the image mask.
   async function fetchMask() {
@@ -140,10 +141,10 @@ const App = () => {
       }
 
       // Create an off-screen canvas element
-      const offScreenCanvas = document.createElement('canvas');
+      const offScreenCanvas = document.createElement("canvas");
       offScreenCanvas.width = canvas.width as number;
       offScreenCanvas.height = canvas.height as number;
-      const offScreenContext = offScreenCanvas.getContext('2d');
+      const offScreenContext = offScreenCanvas.getContext("2d");
 
       if (!offScreenContext) {
         console.error("Unable to get context for the off-screen canvas");
@@ -155,27 +156,29 @@ const App = () => {
       if (canvas.backgroundImage) {
         // Draw the background image onto the off-screen canvas
         // Clone the background image to manipulate and draw it
-        canvas.backgroundImage.clone((clonedBg) => {
-          clonedBg.scaleToWidth(offScreenCanvas.width);
-          clonedBg.scaleToHeight(offScreenCanvas.height);
-          clonedBg.set({ left: 0, top: 0, originX: 'left', originY: 'top' });
-          clonedBg.render(offScreenContext);
+        canvas.backgroundImage.clone(
+          (clonedBg) => {
+            clonedBg.scaleToWidth(offScreenCanvas.width);
+            clonedBg.scaleToHeight(offScreenCanvas.height);
+            clonedBg.set({ left: 0, top: 0, originX: "left", originY: "top" });
+            clonedBg.render(offScreenContext);
 
-          offScreenCanvas.toBlob((blob) => {
-            if (blob) {
-              resolve(blob);
-            } else {
-              reject(new Error('Failed to create blob from canvas'));
-            }
-          }, 'image/png');
-        }, ['left', 'top', 'scaleX', 'scaleY', 'originX', 'originY']);
+            offScreenCanvas.toBlob((blob) => {
+              if (blob) {
+                resolve(blob);
+              } else {
+                reject(new Error("Failed to create blob from canvas"));
+              }
+            }, "image/png");
+          },
+          ["left", "top", "scaleX", "scaleY", "originX", "originY"]
+        );
       } else {
         console.error("Background image not found on the canvas");
         reject(new Error("Background image not found on the canvas"));
       }
     });
   };
-
 
   const getUpdatedMask = async () => {
     return new Promise(async (resolve, reject) => {
@@ -185,14 +188,14 @@ const App = () => {
         return;
       }
 
-      console.log(canvas.width)
-      console.log(canvas.height)
+      console.log(canvas.width);
+      console.log(canvas.height);
 
       // Create an off-screen canvas element
-      const offScreenCanvas = document.createElement('canvas');
+      const offScreenCanvas = document.createElement("canvas");
       offScreenCanvas.width = canvas.width as number;
       offScreenCanvas.height = canvas.height as number;
-      const offScreenContext = offScreenCanvas.getContext('2d');
+      const offScreenContext = offScreenCanvas.getContext("2d");
 
       if (!offScreenContext) {
         console.error("Unable to get context for the off-screen canvas");
@@ -204,7 +207,9 @@ const App = () => {
       canvas.renderAll();
 
       // Find the mask object on the canvas
-      const maskObject = canvas.getObjects().find(obj => obj.type === 'image'); // Assuming mask is the only image object
+      const maskObject = canvas
+        .getObjects()
+        .find((obj) => obj.type === "image"); // Assuming mask is the only image object
 
       if (!maskObject) {
         console.error("Mask object not found on the canvas");
@@ -213,39 +218,41 @@ const App = () => {
       }
 
       // Draw the mask object onto the off-screen canvas
-      maskObject.clone((cloned) => {
-        cloned.scaleToWidth(offScreenCanvas.width);
-        cloned.scaleToHeight(offScreenCanvas.height);
-        cloned.set({ left: 0, top: 0, originX: 'left', originY: 'top' });
-        cloned.render(offScreenContext);
+      maskObject.clone(
+        (cloned) => {
+          cloned.scaleToWidth(offScreenCanvas.width);
+          cloned.scaleToHeight(offScreenCanvas.height);
+          cloned.set({ left: 0, top: 0, originX: "left", originY: "top" });
+          cloned.render(offScreenContext);
 
-        // Now draw the additional drawings from the canvas on top of the mask
-        canvas.getObjects().forEach(obj => {
-          if (obj !== maskObject && obj.type === 'path') {
-            obj.clone((clonedPath) => {
-              clonedPath.set({
-                left: obj.left - canvas.width / 2 + clonedPath.width / 2,
-                top: obj.top - canvas.height / 2 + clonedPath.height / 2,
+          // Now draw the additional drawings from the canvas on top of the mask
+          canvas.getObjects().forEach((obj) => {
+            if (obj !== maskObject && obj.type === "path") {
+              obj.clone((clonedPath) => {
+                clonedPath.set({
+                  left: obj.left - canvas.width / 2 + clonedPath.width / 2,
+                  top: obj.top - canvas.height / 2 + clonedPath.height / 2,
+                });
+                clonedPath.render(offScreenContext);
               });
-              clonedPath.render(offScreenContext);
-            });
-          }
-        });
+            }
+          });
 
-        offScreenCanvas.toBlob((blob) => {
-          if (blob) {
-            resolve(blob);
-          } else {
-            reject(new Error('Failed to create blob from canvas'));
-          }
-        }, 'image/png');
-      }, ['left', 'top', 'scaleX', 'scaleY', 'originX', 'originY']); // Clone with specific properties
+          offScreenCanvas.toBlob((blob) => {
+            if (blob) {
+              resolve(blob);
+            } else {
+              reject(new Error("Failed to create blob from canvas"));
+            }
+          }, "image/png");
+        },
+        ["left", "top", "scaleX", "scaleY", "originX", "originY"]
+      ); // Clone with specific properties
     });
   };
 
-
   const fetchInfill = async () => {
-    console.log('infill')
+    console.log("infill");
     const updatedMask = (await getUpdatedMask()) as File;
     const updatedImage = (await getBackgroundImage()) as File;
     // downloadFile(updatedMask);
@@ -253,28 +260,28 @@ const App = () => {
     // console.log((await getImageDimensions(updatedImage)))
     // console.log((await getImageDimensions(updatedMask)))
     if (uploadedImage && imageMask) {
-      console.log('test')
+      console.log("test");
       const newImage = await getInfill(uploadedImage, imageMask);
-      downloadFile(newImage)
+      downloadFile(newImage);
       // newImage.scale(2)
-      console.log(newImage)
+      console.log(newImage);
       setUploadedImage(newImage);
-      setImageMask(null)
-      setCanvas(null)
+      setImageMask(null);
+      setCanvas(null);
     }
-  }
+  };
 
   function downloadFile(imageFile) {
     // Check the file's MIME type
-    const mimeType = imageFile.type || 'image/png'; // Fallback to a binary stream type
+    const mimeType = imageFile.type || "image/png"; // Fallback to a binary stream type
 
-    console.log(mimeType)
+    console.log(mimeType);
     // Create an object URL for the file
     const blob = new Blob([imageFile], { type: mimeType }); // This step might be redundant if imageFile is already of correct MIME type
     const url = URL.createObjectURL(blob);
 
     // Create a temporary anchor element and set the necessary attributes for downloading
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = imageFile.name; // Use the original file name for the download
     // a.type = mimeType; // This line is not necessary for downloading but shown for completeness
@@ -287,8 +294,6 @@ const App = () => {
     // Clean up the object URL
     URL.revokeObjectURL(url);
   }
-
-
 
   function getImageDimensions(file) {
     return new Promise((resolve, reject) => {
@@ -310,11 +315,22 @@ const App = () => {
     });
   }
 
+  async function handleSignOut() {
+    try {
+      await signOut();
+      // Optionally, redirect the user to the login page or home page
+      // e.g., using Next.js Router or window.location
+    } catch (error) {
+      console.error("Error signing out: ", error);
+    }
+  }
+
   // HTML
   return (
     <div className={styles.App}>
       {/* Top Bar */}
       <div className={styles["top-sidebar"]}>
+        <button onClick={handleSignOut}>Sign out</button>
         <input
           id="upload"
           type="file"
@@ -353,7 +369,7 @@ const App = () => {
       {/* Central Area (where image is placed) */}
       <div className={styles["main-content"]} style={{ position: "relative" }}>
         {/*{uploadedImage && <DrawingCanvas file={uploadedImage} canvas={canvas} setCanvas={setCanvas} />}*/}
-        {(uploadedImage && !imageMask) && (
+        {uploadedImage && !imageMask && (
           <img
             className={styles.img}
             src={URL.createObjectURL(uploadedImage)}
@@ -373,13 +389,14 @@ const App = () => {
         {/*    }}*/}
         {/*  />*/}
         {/*)}*/}
-        {uploadedImage && imageMask &&
-            <DrawingCanvas
-                image={uploadedImage}
-                mask={imageMask}
-                canvas={canvas}
-                setCanvas={setCanvas}
-            />}
+        {uploadedImage && imageMask && (
+          <DrawingCanvas
+            image={uploadedImage}
+            mask={imageMask}
+            canvas={canvas}
+            setCanvas={setCanvas}
+          />
+        )}
       </div>
 
       {/* Library Bar */}
@@ -391,4 +408,5 @@ const App = () => {
   );
 };
 
-export default App;
+// export default App;
+export default withAuthenticator(App);
