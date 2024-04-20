@@ -291,8 +291,8 @@
 
 /* Uploaded Image */
 .img {
-  max-width: 95%;
-  max-height: 95%;
+  max-width: 80%;
+  max-height: 80%;
 }
 
 /* "Library" in Library Bar */
