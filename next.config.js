@@ -7,6 +7,7 @@ const nextConfig = {
         config.resolve.fallback.net = false
         config.resolve.fallback.child_process = false
       }
+      config.externals.push({ sharp: 'commonjs sharp', canvas: 'commonjs canvas' })
   
       return config
     },      
