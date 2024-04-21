@@ -8,13 +8,14 @@ import { Canvas } from "fabric/fabric-impl";
 import { getInfill } from "@/app/services/infill";
 import { withAuthenticator } from "@aws-amplify/ui-react";
 import { signOut } from "aws-amplify/auth";
+import { getTextbox } from "./services/textbox";
 import "@aws-amplify/ui-react/styles.css";
 
 const App = () => {
   const [uploadedImage, setUploadedImage] = useState<File>();
   const [imageMask, setImageMask] = useState<File | null>(null);
-  const [canvas, setCanvas] = useState<Canvas | null>(null);  const [libraryEmpty, setLibraryEmpty] = useState<boolean>(true);
-
+  const [canvas, setCanvas] = useState<Canvas | null>(null);
+  const [libraryEmpty, setLibraryEmpty] = useState<boolean>(true);
 
   // Function to handle image upload.
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,7 +78,7 @@ const App = () => {
   // Function to add a current project to the Library
   const addToLibrary = () => {
     if (!uploadedImage) return;
-  
+
     // Prompt the user for a name
     let imageName = window.prompt("Enter a name for the image:");
     if (!imageName) return; // If the user cancels or provides no name, exit
@@ -90,7 +91,7 @@ const App = () => {
       alert("Image name must not exceed 40 characters.");
       return;
     }
-  
+
     // Get the library bar element
     const libraryBar = document.querySelector(`.${styles["library-bar"]}`);
     const libraryContents = document.querySelector(
@@ -199,8 +200,8 @@ const App = () => {
         return;
       }
 
-      console.log(canvas.width);
-      console.log(canvas.height);
+      // console.log(canvas.width);
+      // console.log(canvas.height);
 
       // Create an off-screen canvas element
       const offScreenCanvas = document.createElement("canvas");
@@ -218,9 +219,12 @@ const App = () => {
       canvas.renderAll();
 
       // Find the mask object on the canvas
-      const maskObject = canvas
-        .getObjects()
-        .find((obj) => obj.type === "image"); // Assuming mask is the only image object
+      const maskObject = canvas.getObjects().find((obj) => true); // Assuming mask is the only image object
+
+      canvas.getObjects().forEach((o) => {
+        console.log("printout");
+        console.log(o);
+      });
 
       if (!maskObject) {
         console.error("Mask object not found on the canvas");
@@ -263,23 +267,27 @@ const App = () => {
   };
 
   const fetchInfill = async () => {
-    console.log("infill");
-    const updatedMask = (await getUpdatedMask()) as File;
-    const updatedImage = (await getBackgroundImage()) as File;
-    // downloadFile(updatedMask);
-    // downloadFile(updatedImage)
-    // console.log((await getImageDimensions(updatedImage)))
-    // console.log((await getImageDimensions(updatedMask)))
-    if (uploadedImage && imageMask) {
-      console.log("test");
-      const newImage = await getInfill(uploadedImage, imageMask);
-      downloadFile(newImage);
-      // newImage.scale(2)
-      console.log(newImage);
-      setUploadedImage(newImage);
-      setImageMask(null);
-      setCanvas(null);
-    }
+    canvas?.renderAll();
+    canvas?.getObjects().forEach(function (obj) {
+      console.log(obj.type); // This will log the type of each object (e.g., 'path', 'circle', 'rect', etc.)
+    });
+    // console.log("infill");
+    // const updatedMask = (await getUpdatedMask()) as File;
+    // const updatedImage = (await getBackgroundImage()) as File;
+    // // downloadFile(updatedMask);
+    // // downloadFile(updatedImage);
+    // // console.log((await getImageDimensions(updatedImage)))
+    // // console.log((await getImageDimensions(updatedMask)))
+    // if (uploadedImage && imageMask) {
+    //   console.log("test");
+    //   // const newImage = await getInfill(uploadedImage, imageMask);
+    //   // downloadFile(newImage);
+    //   // newImage.scale(2)
+    //   // console.log(newImage);
+    //   // setUploadedImage(newImage);
+    //   // setImageMask(null);
+    //   // setCanvas(null);
+    // }
   };
 
   function downloadFile(imageFile) {
@@ -336,6 +344,34 @@ const App = () => {
     }
   }
 
+  async function translate(image: File) {
+    try {
+      const translated = document.getElementById("dmm") as HTMLCanvasElement;
+      const ctx = translated.getContext("2d");
+      console.log(ctx);
+      // Define the bounding box coordinates
+      const box = {
+        x: 50,
+        y: 50,
+        width: 200,
+        height: 100,
+      };
+
+      ctx.beginPath();
+      ctx.rect(box.x, box.y, box.width, box.height);
+      ctx.stroke();
+
+      // Add text inside the bounding box
+      ctx.font = "16px Arial"; // Set font style
+      ctx.fillStyle = "black"; // Set text color
+      ctx.fillText("DITMEMAY", box.x + 10, box.y + 20); // Adjust position as needed
+      console.log(await getTextbox(image));
+      return getTextbox(image);
+    } catch (error) {
+      console.error("Error translating: ", error);
+    }
+  }
+
   // HTML
   return (
     <div className={styles.App}>
@@ -361,7 +397,12 @@ const App = () => {
 
       {/* Tool Bar */}
       <div className={styles["tool-bar"]}>
-        <button className={styles["tool-button"]}></button>
+        <button
+          className={styles["tool-button"]}
+          onClick={uploadedImage && (() => translate(uploadedImage))}
+        >
+          Translate
+        </button>
         <button className={styles["tool-button"]}></button>
         <button className={styles["tool-button"]}></button>
         <button className={styles["tool-button"]}></button>
@@ -382,6 +423,7 @@ const App = () => {
         {/*{uploadedImage && <DrawingCanvas file={uploadedImage} canvas={canvas} setCanvas={setCanvas} />}*/}
         {uploadedImage && !imageMask && (
           <img
+            id="dmm"
             className={styles.img}
             src={URL.createObjectURL(uploadedImage)}
             alt="Uploaded"
@@ -412,11 +454,38 @@ const App = () => {
 
       {/* Library Bar */}
       <div className={styles["library-bar"]}>
-      <div className={styles["library-overall-title"]} style={{ fontSize: '30pt', color: 'black', fontWeight: 'bold'}}>Library</div>
+        <div
+          className={styles["library-overall-title"]}
+          style={{ fontSize: "30pt", color: "black", fontWeight: "bold" }}
+        >
+          Library
+        </div>
         <div className={styles["library-contents"]}>
           {/* See All button takes you to the Library Page */}
-          {libraryEmpty && <h3 style={{textAlign: 'center', marginLeft: '10px', marginRight: '10px'}}><br></br>Your library is currently empty. Save an image and it will display here!</h3>}
-          <button className={styles["library-item"]} style={{justifyContent: 'center', color: 'white', fontSize: '16pt', backgroundColor: 'black', display: libraryEmpty ? 'none' : 'flex'}}>SEE ALL</button>
+          {libraryEmpty && (
+            <h3
+              style={{
+                textAlign: "center",
+                marginLeft: "10px",
+                marginRight: "10px",
+              }}
+            >
+              <br></br>Your library is currently empty. Save an image and it
+              will display here!
+            </h3>
+          )}
+          <button
+            className={styles["library-item"]}
+            style={{
+              justifyContent: "center",
+              color: "white",
+              fontSize: "16pt",
+              backgroundColor: "black",
+              display: libraryEmpty ? "none" : "flex",
+            }}
+          >
+            SEE ALL
+          </button>
         </div>
       </div>
     </div>
