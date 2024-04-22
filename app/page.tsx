@@ -9,13 +9,17 @@ import { getInfill } from "@/app/services/infill";
 import { withAuthenticator } from "@aws-amplify/ui-react";
 import { signOut } from "aws-amplify/auth";
 import { getTextbox } from "./services/textbox";
+import fabric from "./services/fabric";
 import "@aws-amplify/ui-react/styles.css";
+
+import { teardownTraceSubscriber } from "next/dist/build/swc";
 
 const App = () => {
   const [uploadedImage, setUploadedImage] = useState<File>();
   const [imageMask, setImageMask] = useState<File | null>(null);
   const [canvas, setCanvas] = useState<Canvas | null>(null);
   const [libraryEmpty, setLibraryEmpty] = useState<boolean>(true);
+  const [updated, setUpdated] = useState<boolean>(false);
 
   // Function to handle image upload.
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -267,27 +271,14 @@ const App = () => {
   };
 
   const fetchInfill = async () => {
-    canvas?.renderAll();
-    canvas?.getObjects().forEach(function (obj) {
-      console.log(obj.type); // This will log the type of each object (e.g., 'path', 'circle', 'rect', etc.)
-    });
-    // console.log("infill");
-    // const updatedMask = (await getUpdatedMask()) as File;
-    // const updatedImage = (await getBackgroundImage()) as File;
-    // // downloadFile(updatedMask);
-    // // downloadFile(updatedImage);
-    // // console.log((await getImageDimensions(updatedImage)))
-    // // console.log((await getImageDimensions(updatedMask)))
-    // if (uploadedImage && imageMask) {
-    //   console.log("test");
-    //   // const newImage = await getInfill(uploadedImage, imageMask);
-    //   // downloadFile(newImage);
-    //   // newImage.scale(2)
-    //   // console.log(newImage);
-    //   // setUploadedImage(newImage);
-    //   // setImageMask(null);
-    //   // setCanvas(null);
-    // }
+    if (uploadedImage && imageMask) {
+      const newImage = await getInfill(uploadedImage, imageMask);
+      // downloadFile(newImage);
+      // newImage.scale(2)
+      // console.log(newImage);
+      setUploadedImage(newImage);
+      setUpdated(true);
+    }
   };
 
   function downloadFile(imageFile) {
@@ -346,28 +337,38 @@ const App = () => {
 
   async function translate(image: File) {
     try {
-      const translated = document.getElementById("dmm") as HTMLCanvasElement;
-      const ctx = translated.getContext("2d");
-      console.log(ctx);
-      // Define the bounding box coordinates
-      const box = {
-        x: 50,
-        y: 50,
-        width: 200,
-        height: 100,
-      };
+      const textBoxData = await getTextbox(imageMask);
+      for (let key in textBoxData.data) {
+        const box = textBoxData.data[key]
+        var top = box.top, left = box.left, right = box.right, bottom = box.bottom;
 
-      ctx.beginPath();
-      ctx.rect(box.x, box.y, box.width, box.height);
-      ctx.stroke();
+        // Calculate width and height from coordinates
+        var width = right - left;
+        var height = bottom - top;
 
-      // Add text inside the bounding box
-      ctx.font = "16px Arial"; // Set font style
-      ctx.fillStyle = "black"; // Set text color
-      ctx.fillText("DITMEMAY", box.x + 10, box.y + 20); // Adjust position as needed
-      console.log(await getTextbox(image));
-      return getTextbox(image);
-    } catch (error) {
+        var textString = box.text;
+
+        // Create a new text object
+        var text = new fabric.fabric.Text(textString, {
+          left: left, // Position horizontally
+          top: top, // Position vertically
+          width: width,
+          fontSize: 10,
+          fill: 'black',
+          textWrapping: true
+        });
+        // console.log(canvas)
+        canvas?.add(text);
+        
+        text.set({
+          scaleX: Math.min(width / text.width, 1), // Ensure the text width fits within the bounding box
+          scaleY: Math.min(height / text.height, 1) // Ensure the text height fits within the bounding box
+        });
+      }
+      
+      canvas?.renderAll();
+    }
+    catch (error){
       console.error("Error translating: ", error);
     }
   }
@@ -421,9 +422,8 @@ const App = () => {
       {/* Central Area (where image is placed) */}
       <div className={styles["main-content"]} style={{ position: "relative" }}>
         {/*{uploadedImage && <DrawingCanvas file={uploadedImage} canvas={canvas} setCanvas={setCanvas} />}*/}
-        {uploadedImage && !imageMask && (
+        {uploadedImage && !imageMask && !updated && (
           <img
-            id="dmm"
             className={styles.img}
             src={URL.createObjectURL(uploadedImage)}
             alt="Uploaded"
@@ -432,17 +432,15 @@ const App = () => {
             }}
           />
         )}
-        {/*{imageMask && (*/}
-        {/*  <img*/}
-        {/*    className={styles.img}*/}
-        {/*    src={URL.createObjectURL(imageMask)}*/}
-        {/*    alt="Mask"*/}
-        {/*    style={{*/}
-        {/*      position: "absolute",*/}
-        {/*    }}*/}
-        {/*  />*/}
-        {/*)}*/}
-        {uploadedImage && imageMask && (
+        {uploadedImage && updated && (
+          <DrawingCanvas
+          image={uploadedImage}
+          mask={null}
+          canvas={canvas}
+          setCanvas={setCanvas}
+        />
+        )}
+        {uploadedImage && imageMask && !updated && (
           <DrawingCanvas
             image={uploadedImage}
             mask={imageMask}
