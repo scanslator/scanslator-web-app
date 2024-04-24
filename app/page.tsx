@@ -349,14 +349,13 @@ const App = () => {
         var textString = box.text;
 
         // Create a new text object
-        var text = new fabric.fabric.Text(textString, {
-          left: left, // Position horizontally
-          top: top, // Position vertically
+        var text = new fabric.fabric.Textbox(textString, {
           width: width,
-          fontSize: 10,
-          fill: 'black',
-          textWrapping: true
-        });
+          top: top,
+          left: left,
+          fontSize: 16,
+          textAlign: 'center'
+      });
         // console.log(canvas)
         canvas?.add(text);
         
