@@ -339,8 +339,10 @@ const App = () => {
     try {
       const textBoxData = await getTextbox(imageMask);
       for (let key in textBoxData.data) {
-        const box = textBoxData.data[key]
-        var top = box.top, left = box.left, right = box.right, bottom = box.bottom;
+        const box = textBoxData.data[key];
+
+        // var ratio_height = document.getElementsByClassName('upper-canvas').height/
+        var top = box.top/2, left = box.left/2, right = box.right/2, bottom = box.bottom/2;
 
         // Calculate width and height from coordinates
         var width = right - left;
@@ -349,13 +351,14 @@ const App = () => {
         var textString = box.text;
 
         // Create a new text object
-        var text = new fabric.fabric.Text(textString, {
-          left: left, // Position horizontally
-          top: top, // Position vertically
+        var text = new fabric.fabric.Textbox(textString, {
           width: width,
+          top: bottom,
+          left: left,
           fontSize: 10,
-          fill: 'black',
-          textWrapping: true
+          textAlign: 'center',
+          editable: false,
+          flipY: true
         });
         // console.log(canvas)
         canvas?.add(text);
