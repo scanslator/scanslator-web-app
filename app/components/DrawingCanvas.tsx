@@ -198,9 +198,10 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
       // className={styles.img}
       style={{
         position: "absolute",
+        boxShadow: "4px 4px 6px rgba(0, 0, 0, 0.2)",
       }}
     >
-      <button onClick={toggleEditMode}>
+      <button style={{ position: 'absolute', top: '1px', right: '1px' }} onClick={toggleEditMode}>
         {isEditMode ? "Cancel edit mode" : "Enter edit mode"}
       </button>
       <button onClick={toggleErasingMode}>Erase</button>

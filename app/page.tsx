@@ -11,6 +11,7 @@ import { signOut } from "aws-amplify/auth";
 import { getTextbox } from "./services/textbox";
 import fabric from "./services/fabric";
 import "@aws-amplify/ui-react/styles.css";
+import Spinner from "./components/Spinner";
 
 import { teardownTraceSubscriber } from "next/dist/build/swc";
 
@@ -20,6 +21,8 @@ const App = () => {
   const [canvas, setCanvas] = useState<Canvas | null>(null);
   const [libraryEmpty, setLibraryEmpty] = useState<boolean>(true);
   const [updated, setUpdated] = useState<boolean>(false);
+  const [maskLoading, setMaskLoading] = useState<boolean>(false);
+  const [infillLoading, setInfillLoading] = useState<boolean>(false);
   const [originalImage, setOriginalImage] = useState<File>();
 
   // Function to handle image upload.
@@ -71,13 +74,16 @@ const App = () => {
   // Function to fetch the image mask.
   async function fetchMask() {
     if (!uploadedImage) return;
-
+  
     try {
+      setMaskLoading(true); // Set loading state to true before API call
       const mask = await getMask(uploadedImage);
       setImageMask(mask);
     } catch (error) {
       console.error("failed to fetch mask");
       throw error;
+    } finally {
+      setMaskLoading(false); // Set loading state to false after API call completes
     }
   }
 
@@ -145,6 +151,8 @@ const App = () => {
 
       // Add the library item to the top of the library bar
       libraryContents.insertAdjacentElement("afterbegin", libraryItem);
+
+      setLibraryEmpty(false);
     } else {
       console.error("Library bar not found");
     }
@@ -272,16 +280,21 @@ const App = () => {
     });
   };
 
-  const fetchInfill = async () => {
+  async function fetchInfill() {
     if (uploadedImage && imageMask) {
-      const newImage = await getInfill(uploadedImage, imageMask);
-      // downloadFile(newImage);
-      // newImage.scale(2)
-      // console.log(newImage);
-      setUploadedImage(newImage);
-      setUpdated(true);
+      try {
+        setInfillLoading(true); // Set loading state to true before API call
+        const newImage = await getInfill(uploadedImage, imageMask);
+        setUploadedImage(newImage);
+        setUpdated(true);
+      } catch (error) {
+        console.error("failed to fetch infill");
+        throw error;
+      } finally {
+        setInfillLoading(false); // Set loading state to false after API call completes
+      }
     }
-  };
+  }
 
   function downloadFile(imageFile) {
     // Check the file's MIME type
@@ -381,6 +394,8 @@ const App = () => {
   // HTML
   return (
     <div className={styles.App}>
+      <Spinner isLoading={maskLoading || infillLoading} /> {/* Render spinner while loading */}
+
       {/* Top Bar */}
       <div className={styles["top-sidebar"]}>
         <button onClick={handleSignOut}>Sign out</button>
@@ -464,7 +479,6 @@ const App = () => {
           Library
         </div>
         <div className={styles["library-contents"]}>
-          {/* See All button takes you to the Library Page */}
           {libraryEmpty && (
             <h3
               style={{
@@ -477,18 +491,18 @@ const App = () => {
               will display here!
             </h3>
           )}
-          <button
-            className={styles["library-item"]}
+          {/*<button
+            className={styles["delete"]}
             style={{
               justifyContent: "center",
               color: "white",
               fontSize: "16pt",
-              backgroundColor: "black",
+              backgroundColor: "red",
               display: libraryEmpty ? "none" : "flex",
             }}
           >
-            SEE ALL
-          </button>
+            DELETE
+          </button>*/}
         </div>
       </div>
     </div>
