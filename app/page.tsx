@@ -20,6 +20,7 @@ const App = () => {
   const [canvas, setCanvas] = useState<Canvas | null>(null);
   const [libraryEmpty, setLibraryEmpty] = useState<boolean>(true);
   const [updated, setUpdated] = useState<boolean>(false);
+  const [originalImage, setOriginalImage] = useState<File>();
 
   // Function to handle image upload.
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,6 +31,7 @@ const App = () => {
     const file = event.target.files?.[0];
     if (file) {
       setUploadedImage(file);
+      setOriginalImage(file)
     }
     console.log(file);
   };
@@ -337,7 +339,7 @@ const App = () => {
 
   async function translate(image: File) {
     try {
-      const textBoxData = await getTextbox(imageMask);
+      const textBoxData = await getTextbox(originalImage);
       for (let key in textBoxData.data) {
         const box = textBoxData.data[key];
 
