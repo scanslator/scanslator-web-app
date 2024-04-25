@@ -37,6 +37,16 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
         width: width,
         height: height,
       });
+      initCanvas.on('mouse:wheel', function(opt) {
+        var delta = opt.e.deltaY;
+        var zoom = initCanvas.getZoom();
+        zoom *= 0.999 ** delta;
+        if (zoom > 20) zoom = 20;
+        if (zoom < 0.01) zoom = 0.01;
+        initCanvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, zoom);
+        opt.e.preventDefault();
+        opt.e.stopPropagation();
+      });
       setCanvas(initCanvas);
       return initCanvas;
     };
@@ -95,6 +105,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
         initCanvas.freeDrawingBrush = new customFabric.PencilBrush(initCanvas);
         initCanvas.freeDrawingBrush.color = "red";
         initCanvas.freeDrawingBrush.width = 5;
+        
       } catch (error) {
         console.error(error);
       }
