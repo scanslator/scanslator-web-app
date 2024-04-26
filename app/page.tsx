@@ -16,13 +16,15 @@ import Spinner from "./components/Spinner";
 import { teardownTraceSubscriber } from "next/dist/build/swc";
 
 const App = () => {
-  const [uploadedImage, setUploadedImage] = useState<File>();
+  //const [uploadedImage, setUploadedImage] = useState<File>();
+  const [uploadedImage, setUploadedImage] = useState<{ image: File, name: string }>();
   const [imageMask, setImageMask] = useState<File | null>(null);
   const [canvas, setCanvas] = useState<Canvas | null>(null);
   const [libraryEmpty, setLibraryEmpty] = useState<boolean>(true);
   const [updated, setUpdated] = useState<boolean>(false);
   const [maskLoading, setMaskLoading] = useState<boolean>(false);
   const [infillLoading, setInfillLoading] = useState<boolean>(false);
+  const [translateLoading, setTranslateLoading] = useState<boolean>(false);
   const [originalImage, setOriginalImage] = useState<File>();
 
   // Function to handle image upload.
@@ -33,8 +35,15 @@ const App = () => {
     // Upload the image
     const file = event.target.files?.[0];
     if (file) {
-      setUploadedImage(file);
-      setOriginalImage(file)
+      setUploadedImage({ image: file, name: file.name });
+      setOriginalImage(file);
+      const topTitle = document.querySelector(`.${styles["top-title"]}`);
+      // Update the text content with the provided imageName
+      if (topTitle) {
+        topTitle.textContent = file.name;
+      } else {
+        console.error("top-title element not found");
+      }
     }
     console.log(file);
   };
@@ -77,7 +86,7 @@ const App = () => {
   
     try {
       setMaskLoading(true); // Set loading state to true before API call
-      const mask = await getMask(uploadedImage);
+      const mask = await getMask(uploadedImage.image);
       setImageMask(mask);
     } catch (error) {
       console.error("failed to fetch mask");
@@ -93,7 +102,9 @@ const App = () => {
 
     // Prompt the user for a name
     let imageName = window.prompt("Enter a name for the image:");
-    if (!imageName) return; // If the user cancels or provides no name, exit
+    if (!imageName) {
+      imageName = uploadedImage.name;
+    }
 
     // Trim the input to remove leading and trailing whitespace
     imageName = imageName.trim();
@@ -131,7 +142,7 @@ const App = () => {
 
       // Create an new library item image div
       const copiedImage = document.createElement("img");
-      copiedImage.src = URL.createObjectURL(uploadedImage);
+      copiedImage.src = URL.createObjectURL(uploadedImage.image);
       copiedImage.alt = "Copied Image";
       copiedImage.className = styles["library-image"];
 
@@ -146,13 +157,26 @@ const App = () => {
 
       // If the item is clicked, the image will change to that respective image
       libraryItem.addEventListener("click", () => {
-        setUploadedImage(uploadedImage);
+        setUploadedImage({ image: uploadedImage.image, name: imageName }); 
+        // Update the top title with the selected image name
+        const topTitle = document.querySelector(`.${styles["top-title"]}`);
+        if (topTitle) {
+          topTitle.textContent = imageName;
+        } else {
+          console.error("top-title element not found");
+        }
       });
 
       // Add the library item to the top of the library bar
       libraryContents.insertAdjacentElement("afterbegin", libraryItem);
-
       setLibraryEmpty(false);
+      const topTitle = document.querySelector(`.${styles["top-title"]}`);
+      // Update the text content with the provided imageName
+      if (topTitle) {
+        topTitle.textContent = imageName;
+      } else {
+        console.error("top-title element not found");
+      }
     } else {
       console.error("Library bar not found");
     }
@@ -284,8 +308,8 @@ const App = () => {
     if (uploadedImage && imageMask) {
       try {
         setInfillLoading(true); // Set loading state to true before API call
-        const newImage = await getInfill(uploadedImage, imageMask);
-        setUploadedImage(newImage);
+        const newImage = await getInfill(uploadedImage.image, imageMask);
+        setUploadedImage({image: newImage, name: uploadedImage.name});
         setUpdated(true);
       } catch (error) {
         console.error("failed to fetch infill");
@@ -352,6 +376,7 @@ const App = () => {
 
   async function translate(image: File) {
     try {
+      setTranslateLoading(true);
       const textBoxData = await getTextbox(originalImage);
       for (let key in textBoxData.data) {
         const box = textBoxData.data[key];
@@ -389,54 +414,42 @@ const App = () => {
     catch (error){
       console.error("Error translating: ", error);
     }
+    finally {
+      setTranslateLoading(false);
+    }
   }
 
   // HTML
   return (
     <div className={styles.App}>
-      <Spinner isLoading={maskLoading || infillLoading} /> {/* Render spinner while loading */}
+      <Spinner isLoading={maskLoading || infillLoading || translateLoading} /> {/* Render spinner while loading */}
 
       {/* Top Bar */}
       <div className={styles["top-sidebar"]}>
-        <button onClick={handleSignOut}>Sign out</button>
+      <div className={styles["top-button"]} style={{minWidth:"100px", marginRight: "auto", marginLeft: "10%"}}> 
+        <div style={{display: "flex", justifyContent: "center"}}>
         <input
           id="upload"
           type="file"
           accept="image/*"
           onChange={handleImageUpload}
+          className={styles["file-input"]}
         />
-        <button type="button" onClick={fetchMask}>
-          Mask On
-        </button>
-        <button type="button" onClick={() => setImageMask(null)}>
-          Reset Mask
-        </button>
-        <button type="button" onClick={fetchInfill}>
-          Infill
-        </button>
+        <label htmlFor="upload" style={{justifyContent: "center"}}> Upload Image</label>
+        </div>
+      </div>
+      <div className={styles["top-title"]}>No Uploaded Image</div>
+      <button className={styles["top-button"]} style={{minWidth:"100px", marginLeft: "auto", marginRight: "10%"}} onClick={handleSignOut}>Sign Out</button>
       </div>
 
       {/* Tool Bar */}
       <div className={styles["tool-bar"]}>
-        <button
-          className={styles["tool-button"]}
-          onClick={uploadedImage && (() => translate(uploadedImage))}
-        >
-          Translate
-        </button>
-        <button className={styles["tool-button"]}></button>
-        <button className={styles["tool-button"]}></button>
-        <button className={styles["tool-button"]}></button>
-        <button
-          className={styles["tool-button"]}
-          style={{ marginTop: "auto" }}
-          onClick={addToLibrary}
-        >
-          Save to Library
-        </button>
-        <button className={styles["tool-button"]} onClick={handleImageDownload}>
-          Download Image
-        </button>
+        <button className={styles["tool-button"]} onClick={fetchMask}>Find<br />Mask</button>
+        <button className={styles["tool-button"]} onClick={() => setImageMask(null)}>Reset Mask</button>
+        <button className={styles["tool-button"]} onClick={fetchInfill}>Remove Text</button>
+        <button className={styles["tool-button"]} onClick={uploadedImage && (() => translate(uploadedImage.image))}>Translate Text</button>
+        <button className={styles["tool-button"]} style={{ marginTop: "auto" }} onClick={addToLibrary}>Save to Library</button>
+        <button className={styles["tool-button"]} onClick={handleImageDownload}>Download Image</button>
       </div>
 
       {/* Central Area (where image is placed) */}
@@ -445,7 +458,7 @@ const App = () => {
         {uploadedImage && !imageMask && !updated && (
           <img
             className={styles.img}
-            src={URL.createObjectURL(uploadedImage)}
+            src={URL.createObjectURL(uploadedImage.image)}
             alt="Uploaded"
             style={{
               position: "absolute",
@@ -454,7 +467,7 @@ const App = () => {
         )}
         {uploadedImage && updated && (
           <DrawingCanvas
-          image={uploadedImage}
+          image={uploadedImage.image}
           mask={null}
           canvas={canvas}
           setCanvas={setCanvas}
@@ -462,7 +475,7 @@ const App = () => {
         )}
         {uploadedImage && imageMask && !updated && (
           <DrawingCanvas
-            image={uploadedImage}
+            image={uploadedImage.image}
             mask={imageMask}
             canvas={canvas}
             setCanvas={setCanvas}

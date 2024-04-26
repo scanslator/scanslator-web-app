@@ -283,6 +283,27 @@
   align-items: center;
 }
 
+/* Buttons on the Top Bar */
+.top-button {
+  height:80%;
+  width: 10%;
+  align-items: center;
+  background-color:#e2b8b8;
+  border-style: solid;
+  font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.top-button:hover {
+  filter: brightness(80%);
+}
+
+/* Title of the Current Image */
+.top-title {
+  align-items: center;
+  justify-content: center;
+  font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
 /* Tool Buttons */
 .tool-button {
   width: 80%;
@@ -293,6 +314,10 @@
   align-items: center;
   background-color:#bdbdbd;
   font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.tool-button:hover {
+  filter: brightness(80%);
 }
 
 /* Uploaded Image */
@@ -326,6 +351,10 @@
   background-color:#bdbdbd;
 }
 
+.library-item:hover {
+  filter: brightness(80%);
+}
+
 /* Library Item Image */
 .library-image {
   width: 30%; 
@@ -355,7 +384,6 @@
   width: 175px;
 }
 
-
 /* Spinner-Related CSS*/
 .overlay {
   position: fixed;
@@ -384,4 +412,28 @@
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* Upload-Related CSS */
+.file-upload {
+  position: relative;
+  overflow: hidden;
+}
+
+.file-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  
+  opacity: 0;
+  cursor: pointer;
+}
+
+.file-label {
+  display: inline-block;
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: #fff;
+  border-radius: 5px;
+  cursor: pointer;
 }
