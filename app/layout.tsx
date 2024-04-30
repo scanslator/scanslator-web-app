@@ -1,5 +1,5 @@
 // app/layout.tsx
-import ConfigureAmplifyClientSide from "@/app/components/ConfigureAmplify";
+import ConfigureAmplifyClientSide from "@/app/ConfigureAmplify";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
